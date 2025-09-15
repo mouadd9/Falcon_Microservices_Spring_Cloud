@@ -29,4 +29,4 @@ eureka:
     serviceUrl:
       defaultZone: http://eureka-server:8761/eureka/
   instance:
-    prefer-ip-address: true # Prefer registering with IP address over hostname which is often preferred in containerized environments like Docker.
+    prefer-ip-address: false # the gateway will be reached by its hostname which will be resolved by docker DNS

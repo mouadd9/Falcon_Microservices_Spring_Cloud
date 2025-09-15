@@ -1,0 +1,68 @@
+version: '2'
+
+services:
+  # --name eureka-server
+  eureka-server:
+    # this provides the build context and Builds a new image = Docker image build .
+    build: eureka-server/.
+    # this Tags the newly built image = Docker image build -t mouadd9/eureka-server .
+    image: mouadd9/eureka-server
+    # -p 8761:8761 -> this forwards traffic coming to our host machine at port 8761 to this container
+    ports:
+      - "8761:8761"
+
+  # this service is used by microservices in the Docker virtual network it runs at port 9999
+  # it should not be exposed
+  config-server:
+    build: config-server/.
+    image: mouadd9/config-server
+
+  api-gateway:
+    build: api-gateway/.
+    image: mouadd9/api-gateway
+    ports:
+      - "8888:8888"
+
+  content-service:
+    build: content-service/.
+    image: mouadd9/content-service
+
+  instance-service:
+    build: instance-service/.
+    image: mouadd9/instance-service
+
+  progression-service:
+    build: progression-service/.
+    image: mouadd9/progression-service
+
+  content_db:
+    image: mysql:8.0
+    # when we run a mysql container before launching the mysqld a script is used to create a user in the database
+    # this script expects env variables to be injected into the container
+    # equi to -e
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root_password'
+      MYSQL_DATABASE: 'content_db'
+      MYSQL_USER: 'content_db_user'
+      MYSQL_PASSWORD: 'password'
+
+  instance_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root_password'
+      MYSQL_DATABASE: 'instance_db'
+      MYSQL_USER: 'instance_db_user'
+      MYSQL_PASSWORD: 'password'
+
+  progression_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root_password'
+      MYSQL_DATABASE: 'progression_db'
+      MYSQL_USER: 'progression_db_user'
+      MYSQL_PASSWORD: 'password'
+
+volumes:
+
+
+networks:
