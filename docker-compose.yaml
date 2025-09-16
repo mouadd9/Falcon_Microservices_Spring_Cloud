@@ -75,6 +75,11 @@ services:
       MYSQL_DATABASE: 'content_db'
       MYSQL_USER: 'content_db_user'
       MYSQL_PASSWORD: 'password'
+    # this bind volume will transmit the script into teh container to create the init database at /var/lib/mysql
+    # the Volume will that data outside
+    volumes:
+      - content_db_volume:/var/lib/mysql
+      # - ./content_data.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - spring-cloud-network
 
@@ -85,6 +90,8 @@ services:
       MYSQL_DATABASE: 'instance_db'
       MYSQL_USER: 'instance_db_user'
       MYSQL_PASSWORD: 'password'
+    volumes:
+      - instance_db_volume:/var/lib/mysql
     networks:
       - spring-cloud-network
 
@@ -95,11 +102,17 @@ services:
       MYSQL_DATABASE: 'progression_db'
       MYSQL_USER: 'progression_db_user'
       MYSQL_PASSWORD: 'password'
+    volumes:
+      - progression_db_volume:/var/lib/mysql
     networks:
       - spring-cloud-network
 
+# we will use named volumes
+# at first Docker will create these volumes once and then they will be reused
 volumes:
-
+  content_db_volume:
+  instance_db_volume:
+  progression_db_volume:
 
 networks:
   spring-cloud-network:
