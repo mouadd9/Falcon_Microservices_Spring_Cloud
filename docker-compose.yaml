@@ -10,6 +10,8 @@ services:
     # -p 8761:8761 -> this forwards traffic coming to our host machine at port 8761 to this container
     ports:
       - "8761:8761"
+    networks:
+      - spring-cloud-network
 
   # this service is used by microservices in the Docker virtual network it runs at port 9999
   config-server:
@@ -17,6 +19,8 @@ services:
     image: mouadd9/config-server
     depends_on:
       - eureka-server
+    networks:
+      - spring-cloud-network
 
   api-gateway:
     build: api-gateway/.
@@ -26,6 +30,8 @@ services:
     depends_on:
       - eureka-server
       - config-server
+    networks:
+      - spring-cloud-network
 
   content-service:
     build: content-service/.
@@ -34,6 +40,8 @@ services:
       - eureka-server
       - config-server
       - content_db
+    networks:
+      - spring-cloud-network
 
   instance-service:
     build: instance-service/.
@@ -43,6 +51,8 @@ services:
       - config-server
       - instance_db
       - content-service
+    networks:
+      - spring-cloud-network
 
   progression-service:
     build: progression-service/.
@@ -52,6 +62,8 @@ services:
       - config-server
       - progression_db
       - content-service
+    networks:
+      - spring-cloud-network
 
   content_db:
     image: mysql:8.0
@@ -63,6 +75,8 @@ services:
       MYSQL_DATABASE: 'content_db'
       MYSQL_USER: 'content_db_user'
       MYSQL_PASSWORD: 'password'
+    networks:
+      - spring-cloud-network
 
   instance_db:
     image: mysql:8.0
@@ -71,6 +85,8 @@ services:
       MYSQL_DATABASE: 'instance_db'
       MYSQL_USER: 'instance_db_user'
       MYSQL_PASSWORD: 'password'
+    networks:
+      - spring-cloud-network
 
   progression_db:
     image: mysql:8.0
@@ -79,7 +95,12 @@ services:
       MYSQL_DATABASE: 'progression_db'
       MYSQL_USER: 'progression_db_user'
       MYSQL_PASSWORD: 'password'
+    networks:
+      - spring-cloud-network
 
 volumes:
 
 
+networks:
+  spring-cloud-network:
+    driver: bridge
