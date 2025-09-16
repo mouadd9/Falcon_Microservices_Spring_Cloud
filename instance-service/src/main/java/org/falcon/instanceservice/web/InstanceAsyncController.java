@@ -5,7 +5,8 @@ import org.falcon.instanceservice.service.AsyncInstanceOperationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 /**
  * Clean WebSocket Controller: Only handles HTTP requests and responses
  * All business logic is delegated to AsyncInstanceOperationService
@@ -34,7 +35,8 @@ public class InstanceAsyncController {
      * 4. Client receives completion/failure notification
      */
     @PostMapping("/async")
-    public ResponseEntity<InstanceOperationStarted> createInstanceAsync(@RequestParam Long roomId, @RequestParam Long userId) {
+    public ResponseEntity<InstanceOperationStarted> createInstanceAsync(@RequestParam Long roomId, @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         InstanceOperationStarted response = asyncInstanceOperationService.createInstanceAsync(roomId, userId);
         return ResponseEntity.ok(response);
     }

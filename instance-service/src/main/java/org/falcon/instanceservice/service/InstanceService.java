@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface InstanceService {
 
-    CompletableFuture<CreateInstanceResponse> createAndProvisionInstance(Long roomId, Long userId, String operationId);
+    CompletableFuture<CreateInstanceResponse> createAndProvisionInstance(Long roomId, String userId, String operationId);
     Instance findInstanceById(Long internalInstanceId);
     CompletableFuture<InstanceActionResponse> startInstance(Long internalInstanceId, String operationId, String userId);
     CompletableFuture<InstanceActionResponse> stopInstance(Long internalInstanceId, String operationId, String userId);
@@ -25,5 +25,5 @@ public interface InstanceService {
      * @param userId The ID of the user
      * @return InstanceStateDTO containing the current state
      */
-    InstanceStateDTO getInstanceStateForRoom(Long roomId, Long userId);
+    InstanceStateDTO getInstanceStateForRoom(Long roomId, String userId);
 }

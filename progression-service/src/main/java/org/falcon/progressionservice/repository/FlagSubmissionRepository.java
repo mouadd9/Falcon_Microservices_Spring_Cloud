@@ -17,13 +17,13 @@ public interface FlagSubmissionRepository extends JpaRepository<FlagSubmission, 
      * across all rooms. This query only uses local data.
      */
     @Query("SELECT fs.challengeId FROM FlagSubmission fs WHERE fs.userId = :userId AND fs.isCorrect = true")
-    Set<Long> findCorrectChallengeIdsByUserId(@Param("userId") Long userId);
+    Set<Long> findCorrectChallengeIdsByUserId(@Param("userId") String userId);
 
     @Modifying
     @Query("DELETE FROM FlagSubmission fs WHERE fs.userId = :userId AND fs.challengeId IN :challengeIds")
-    void deleteByUserIdAndChallengeIdIn(@Param("userId") Long userId, @Param("challengeIds") Set<Long> challengeIds);
+    void deleteByUserIdAndChallengeIdIn(@Param("userId") String userId, @Param("challengeIds") Set<Long> challengeIds);
 
-    Optional<FlagSubmission> findByUserIdAndChallengeId(Long userId, Long challengeId);
+    Optional<FlagSubmission> findByUserIdAndChallengeId(String userId, Long challengeId);
 
 
 }

@@ -31,7 +31,7 @@ public class FlagSubmissionServiceImp implements FlagSubmissionService {
     // create a new DTO that has a challenge and its Room the flag DTO by adding a flag property for a challenge so that we can  find the flag for a challenge
     // manage the challenge not found exception
     @Override
-    public boolean processSubmission(Long userId, Long challengeId, String submittedFlag) {
+    public boolean processSubmission(String userId, Long challengeId, String submittedFlag) {
         // Step 1: Call the NEW endpoint to get the challenge with its flag and room.
         // This replaces your old call
         ChallengeWithSolutionDTO challenge = contentServiceClient.getChallengeWithSolutionById(challengeId); // Throws exception if not found
@@ -87,7 +87,7 @@ public class FlagSubmissionServiceImp implements FlagSubmissionService {
         return isCorrect;
     }
 
-    private void updateChallengeCompletionCount(Long userId, Long roomId) {
+    private void updateChallengeCompletionCount(String userId, Long roomId) {
         // Find room membership
         Optional<RoomMembership> membership = roomMembershipRepository
                 .findByUserIdAndRoomId(userId, roomId);
@@ -106,7 +106,7 @@ public class FlagSubmissionServiceImp implements FlagSubmissionService {
         });
     }
     @Override
-    public void deleteSubmissionsForUserAndRoom(Long userId, Long roomId) {
+    public void deleteSubmissionsForUserAndRoom(String userId, Long roomId) {
         // Get a room with all its details and challenges
         RoomDTO roomDetails = contentServiceClient.getRoomById(roomId); // this may generate an exception
         if (roomDetails == null || roomDetails.getChallenges() == null || roomDetails.getChallenges().isEmpty()) {
@@ -125,7 +125,7 @@ public class FlagSubmissionServiceImp implements FlagSubmissionService {
 
     }
 
-    private Set<Long> getCompletedChallengesForUserInRoom(Long userId, Long roomId) {
+    private Set<Long> getCompletedChallengesForUserInRoom(String userId, Long roomId) {
 
         // 1. Fetch all challenges belonging to the specified room from the content service.
         // This is your existing code.

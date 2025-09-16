@@ -9,6 +9,7 @@ COPY .mvn .mvn
 COPY pom.xml .
 # only creates a layer if the previous layer has changed (pom.xml)
 # the layer contains installed dependencies
+RUN chmod +x ./mvnw
 RUN ./mvnw dependency:resolve
 # new layer with source code (changes frequently)
 COPY src ./src

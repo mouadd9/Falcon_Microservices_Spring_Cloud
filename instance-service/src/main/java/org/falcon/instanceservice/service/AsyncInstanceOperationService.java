@@ -15,7 +15,7 @@ public interface AsyncInstanceOperationService {
      * @param userId The user ID
      * @return Immediate response with operation details
      */
-    InstanceOperationStarted createInstanceAsync(Long roomId, Long userId);
+    InstanceOperationStarted createInstanceAsync(Long roomId, String userId);
 
     /**
      * Initiate asynchronous instance start

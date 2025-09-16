@@ -60,12 +60,12 @@ public class InstanceServiceImp implements InstanceService {
 
     // @Transactional
     @Override
-    public CompletableFuture<CreateInstanceResponse> createAndProvisionInstance(Long roomId, Long userId,
+    public CompletableFuture<CreateInstanceResponse> createAndProvisionInstance(Long roomId, String userId,
                                                                                 String operationId) {
         // 1. INITIALIZING (10% progress) - Send initial progress update
         // Factory method InstanceOperationUpdate.initializing now sets operationType="CREATE"
         webSocketService.sendCustomUpdateToOwner(
-                userId.toString(),
+                userId,
                 InstanceOperationUpdate.initializingCreation(operationId, "pending"));
 
         RoomDTO room = this.contentServiceClient.getRoomById(roomId);
@@ -80,7 +80,7 @@ public class InstanceServiceImp implements InstanceService {
             InstanceOperationUpdate errorUpdate = InstanceOperationUpdate.failed(
                     operationId, "pending", "Configuration Error", errorMessage);
             errorUpdate.setOperationType("CREATE"); // Set operationType for this failure
-            webSocketService.sendInstanceUpdateToOwner(userId.toString(), errorUpdate);
+            webSocketService.sendInstanceUpdateToOwner(userId, errorUpdate);
 
             throw new InstanceProvisioningException(errorMessage);
         }
@@ -143,7 +143,7 @@ public class InstanceServiceImp implements InstanceService {
                         InstanceOperationUpdate errorUpdate = InstanceOperationUpdate.failed(
                                 operationId, instanceId, "Provisioning Failed", errorMessage);
                         errorUpdate.setOperationType("CREATE"); // Set operationType for this failure
-                        webSocketService.sendInstanceUpdateToOwner(userId.toString(), errorUpdate);
+                        webSocketService.sendInstanceUpdateToOwner(userId, errorUpdate);
 
                         throw new InstanceProvisioningException(errorMessage);
                     }
@@ -159,7 +159,7 @@ public class InstanceServiceImp implements InstanceService {
                     InstanceOperationUpdate errorUpdate = InstanceOperationUpdate.failed(
                             operationId, instanceId, "Provisioning Exception", errorMessage);
                     errorUpdate.setOperationType("CREATE"); // Set operationType for this failure
-                    webSocketService.sendInstanceUpdateToOwner(userId.toString(), errorUpdate);
+                    webSocketService.sendInstanceUpdateToOwner(userId, errorUpdate);
 
                     throw new InstanceProvisioningException(errorMessage, ex);
                 });
@@ -318,7 +318,7 @@ public class InstanceServiceImp implements InstanceService {
     }
 
     @Override
-    public InstanceStateDTO getInstanceStateForRoom(Long roomId, Long userId) {
+    public InstanceStateDTO getInstanceStateForRoom(Long roomId, String userId) {
         logger.info("Getting instance state for room {} and user {}", roomId, userId);
 
         try {
