@@ -17,6 +17,8 @@ public class SecurityConfig {
         http
             // 1. Authorize all incoming HTTP requests.
             .authorizeHttpRequests(authorize -> authorize
+                // Permit actuator health/info for Docker/K8s probes
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                 // 2. Rule: Any request to any endpoint must be authenticated.
                 .anyRequest().authenticated()
             )
