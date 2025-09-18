@@ -1,13 +1,10 @@
-version: '2.1'
+version: '3.8'
 
 services:
-  # --name eureka-server
+  # --- SPRING CLOUD INFRASTRUCTURE ---
   eureka-server:
-    # this provides the build context and Builds a new image = Docker image build .
     build: eureka-server/.
-    # this Tags the newly built image = Docker image build -t mouadd9/eureka-server .
     image: mouadd9/eureka-server
-    # -p 8761:8761 -> this forwards traffic coming to our host machine at port 8761 to this container
     ports:
       - "8761:8761"
     healthcheck:
@@ -18,97 +15,67 @@ services:
     networks:
       - spring-cloud-network
 
-  # this service is used by microservices in the Docker virtual network it runs at port 9999
   config-server:
     build: config-server/.
     image: mouadd9/config-server
+    depends_on:
+      eureka-server:
+        condition: service_healthy
     healthcheck:
       test: "wget -T5 -qO- http://localhost:9999/actuator/health | grep UP || exit 1"
       interval: 10s
       timeout: 5s
       retries: 5
-    depends_on:
-      eureka-server:
-        condition: service_healthy
     networks:
       - spring-cloud-network
 
-  api-gateway:
-    build: api-gateway/.
-    image: mouadd9/api-gateway
-    ports:
-      - "8888:8888"
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-    networks:
-      - spring-cloud-network
-
-  content-service:
-    build: content-service/.
-    image: mouadd9/content-service
+  # --- AUTHENTICATION SERVICE ---
+  keycloak_db:
+    image: postgres:15
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
     healthcheck:
-      test: "wget -T5 -qO- http://localhost:8080/actuator/health | grep UP || exit 1"
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
       interval: 10s
       timeout: 5s
       retries: 5
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-      content_db:
-        condition: service_healthy
     networks:
       - spring-cloud-network
 
-  instance-service:
-    build: instance-service/.
-    image: mouadd9/instance-service
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.1
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak_db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+    ports:
+      - "8080:8080"
     depends_on:
-      eureka-server:
+      keycloak_db:
         condition: service_healthy
-      config-server:
-        condition: service_healthy
-      instance_db:
-        condition: service_healthy
-      content-service:
-        condition: service_healthy
+    command:
+      - "start-dev"
     networks:
       - spring-cloud-network
 
-  progression-service:
-    build: progression-service/.
-    image: mouadd9/progression-service
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-      progression_db:
-        condition: service_healthy
-      content-service:
-        condition: service_healthy
-    networks:
-      - spring-cloud-network
-
+  # --- APPLICATION DATABASES ---
   content_db:
     image: mysql:8.0
-    # when we run a mysql container before launching the mysqld a script is used to create a user in the database
-    # this script expects env variables to be injected into the container
-    # equi to -e
     environment:
       MYSQL_ROOT_PASSWORD: 'root_password'
       MYSQL_DATABASE: 'content_db'
       MYSQL_USER: 'content_db_user'
       MYSQL_PASSWORD: 'password'
-    # this bind volume will transmit the script into teh container to create the init database at /var/lib/mysql
-    # the Volume will that data outside
     volumes:
       - content_db_volume:/var/lib/mysql
-      # - ./content_data.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./content_data.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
       interval: 10s
@@ -151,13 +118,76 @@ services:
     networks:
       - spring-cloud-network
 
-# we will use named volumes
-# at first Docker will create these volumes once and then they will be reused
+  # --- APPLICATION MICROSERVICES ---
+  api-gateway:
+    build: api-gateway/.
+    image: mouadd9/api-gateway
+    ports:
+      - "8888:8888"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - spring-cloud-network
+
+  content-service:
+    build: content-service/.
+    image: mouadd9/content-service
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      content_db:
+        condition: service_healthy
+    healthcheck:
+      test: "wget -T5 -qO- http://localhost:8080/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spring-cloud-network
+
+  instance-service:
+    build: instance-service/.
+    image: mouadd9/instance-service
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      instance_db:
+        condition: service_healthy
+      content-service:
+        condition: service_healthy
+    networks:
+      - spring-cloud-network
+
+  progression-service:
+    build: progression-service/.
+    image: mouadd9/progression-service
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      progression_db:
+        condition: service_healthy
+      content-service:
+        condition: service_healthy
+    networks:
+      - spring-cloud-network
+
+# --- NAMED VOLUMES ---
 volumes:
   content_db_volume:
   instance_db_volume:
   progression_db_volume:
+  keycloak_db_data:
 
+# --- SHARED NETWORK ---
 networks:
   spring-cloud-network:
     driver: bridge
