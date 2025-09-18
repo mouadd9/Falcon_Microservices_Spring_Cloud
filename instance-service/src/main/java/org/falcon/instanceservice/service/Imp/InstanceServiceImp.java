@@ -143,7 +143,7 @@ public class InstanceServiceImp implements InstanceService {
                         InstanceOperationUpdate errorUpdate = InstanceOperationUpdate.failed(
                                 operationId, instanceId, "Provisioning Failed", errorMessage);
                         errorUpdate.setOperationType("CREATE"); // Set operationType for this failure
-                        webSocketService.sendInstanceUpdateToOwner(userId.toString(), errorUpdate);
+                        webSocketService.sendInstanceUpdateToOwner(userId, errorUpdate);
 
                         throw new InstanceProvisioningException(errorMessage);
                     }
@@ -159,7 +159,7 @@ public class InstanceServiceImp implements InstanceService {
                     InstanceOperationUpdate errorUpdate = InstanceOperationUpdate.failed(
                             operationId, instanceId, "Provisioning Exception", errorMessage);
                     errorUpdate.setOperationType("CREATE"); // Set operationType for this failure
-                    webSocketService.sendInstanceUpdateToOwner(userId.toString(), errorUpdate);
+                    webSocketService.sendInstanceUpdateToOwner(userId, errorUpdate);
 
                     throw new InstanceProvisioningException(errorMessage, ex);
                 });
@@ -318,7 +318,7 @@ public class InstanceServiceImp implements InstanceService {
     }
 
     @Override
-    public InstanceStateDTO getInstanceStateForRoom(Long roomId, Long userId) {
+    public InstanceStateDTO getInstanceStateForRoom(Long roomId, String userId) {
         logger.info("Getting instance state for room {} and user {}", roomId, userId);
 
         try {

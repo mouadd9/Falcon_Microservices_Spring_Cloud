@@ -31,7 +31,7 @@ public class AsyncInstanceOperationServiceImp implements AsyncInstanceOperationS
     private InstanceWebSocketService webSocketService;
 
     @Override
-    public InstanceOperationStarted createInstanceAsync(Long roomId, Long userId) {
+    public InstanceOperationStarted createInstanceAsync(Long roomId, String userId) {
         String operationId = UUID.randomUUID().toString(); // here we create an operation ID
         logger.info("Starting async instance creation for user {} in room {}, operation ID: {}", userId, roomId, operationId);
         // Start async operation
@@ -40,7 +40,7 @@ public class AsyncInstanceOperationServiceImp implements AsyncInstanceOperationS
                     // Send success update via WebSocket to the instance owner
                     // The launched() factory method in InstanceOperationUpdate now sets operationType="CREATE"
                     webSocketService.sendOperationCompleteToOwner(
-                            userId.toString(), // user ID as string
+                            userId, // user ID as string
                             operationId, // operation ID for tracking
                             createResponse.getInternalInstanceId().toString(), // internal instance ID (e.g., 12345)
                             createResponse.getPrivateIpAddress() // private IP address if available
@@ -50,11 +50,11 @@ public class AsyncInstanceOperationServiceImp implements AsyncInstanceOperationS
                     // Send error update via WebSocket to the instance owner
                     InstanceOperationUpdate errorUpdate = InstanceOperationUpdate.failed( operationId, null,"Failed to create instance", throwable.getMessage());
                     errorUpdate.setOperationType("CREATE"); // Explicitly set for create operation failure
-                    webSocketService.sendInstanceUpdateToOwner(userId.toString(), errorUpdate);
+                    webSocketService.sendInstanceUpdateToOwner(userId, errorUpdate);
                     return null;
                 });
         // Return immediate response
-        return new InstanceOperationStarted(operationId, null, "CREATE", userId.toString());
+        return new InstanceOperationStarted(operationId, null, "CREATE", userId);
     }
 
     @Override

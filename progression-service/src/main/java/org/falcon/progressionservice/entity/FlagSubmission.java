@@ -17,7 +17,7 @@ public class FlagSubmission {
     private Date submissionDate;
 
     @Column(name = "user_id")
-    private Long userId;
+    private String userId;
 
     @Column(name = "challenge_id")
     private Long challengeId;

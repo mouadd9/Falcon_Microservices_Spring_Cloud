@@ -38,7 +38,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public void joinRoom(Long userId, Long roomId) {
+    public void joinRoom(String userId, Long roomId) {
         // step 1 : this returns an optional (this may or may not have a roomMembership)
         Optional<RoomMembership> roomMembership = this.roomMembershipRepository.findByUserIdAndRoomId(userId, roomId);
         // step 2 : check
@@ -62,7 +62,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public void saveRoom(Long userId, Long roomId) {
+    public void saveRoom(String userId, Long roomId) {
         // step 1
         Optional<RoomMembership> roomMembership = this.roomMembershipRepository.findByUserIdAndRoomId(userId, roomId);
         // step 2
@@ -84,7 +84,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public void unSaveRoom(Long userId, Long roomId) {
+    public void unSaveRoom(String userId, Long roomId) {
         Optional<RoomMembership> roomMembership = this.roomMembershipRepository.findByUserIdAndRoomId(userId, roomId);
         roomMembership.ifPresentOrElse(membership -> {
             if (membership.getIsJoined()) { // if the room is Joined, then we will, set isSaved to false
@@ -99,7 +99,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public void leaveRoom(Long userId, Long roomId) {
+    public void leaveRoom(String userId, Long roomId) {
         Optional<RoomMembership> roomMembership = this.roomMembershipRepository.findByUserIdAndRoomId(userId, roomId);
         roomMembership.ifPresentOrElse(membership -> {
             this.contentServiceClient.decrementJoinedUsers(roomId);
@@ -118,12 +118,12 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public void resetRoomProgress(Long userId, Long roomId) {
+    public void resetRoomProgress(String userId, Long roomId) {
 
     }
 
     @Override
-    public List<RoomDTO> getRoomCatalogForUser(Long userId) {
+    public List<RoomDTO> getRoomCatalogForUser(String userId) {
         List<RoomDTO> allRooms = contentServiceClient.getAllRooms();
         List<RoomDTO> joinedRooms = getJoinedRooms(userId);
         List<RoomDTO> savedRooms = getSavedRooms(userId);
@@ -154,7 +154,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public List<RoomDTO> getJoinedRooms(Long userId) {
+    public List<RoomDTO> getJoinedRooms(String userId) {
         // Memberships for joined rooms -> extraction of the Ids of joined rooms
         List<RoomMembership> memberships = roomMembershipRepository.findByUserIdAndIsJoinedTrue(userId);
         List<Long> roomIds = memberships.stream().map(membership -> membership.getRoomId()).toList();
@@ -170,7 +170,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public List<RoomDTO> getSavedRooms(Long userId) {
+    public List<RoomDTO> getSavedRooms(String userId) {
         List<RoomMembership> memberships = roomMembershipRepository.findByUserIdAndIsSavedTrue(userId);
         List<Long> roomIds = memberships.stream().map(membership -> membership.getRoomId()).toList();
         List<RoomDTO> savedRooms = contentServiceClient.getRoomsByIds(roomIds);
@@ -182,7 +182,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public List<RoomDTO> getCompletedRooms(Long userId) {
+    public List<RoomDTO> getCompletedRooms(String userId) {
         List<RoomMembership> allMemberships = roomMembershipRepository.findByUserId(userId); // we retrieve all memberships
         List<Long> roomIds = allMemberships.stream().map(membership -> membership.getRoomId()).toList();
         List<RoomDTO> rooms = contentServiceClient.getRoomsByIds(roomIds);
@@ -202,7 +202,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public RoomDTO getJoinedRoom(Long userId, Long roomId) {
+    public RoomDTO getJoinedRoom(String userId, Long roomId) {
         // 1. Get the local membership data to confirm the user has joined this room.
         RoomMembership roomMembership = roomMembershipRepository.findByUserIdAndRoomId(userId, roomId)
                 .orElseThrow(() -> new RoomMembershipNotFoundException("User has not joined this room"));
@@ -229,7 +229,7 @@ public class RoomEnrollmentServiceImp implements RoomEnrollmentService {
     }
 
     @Override
-    public Map<String, Boolean> getRoomMembershipStatus(long userId, long roomId) {
+    public Map<String, Boolean> getRoomMembershipStatus(String userId, Long roomId) {
         Map<String, Boolean> status = new HashMap<>();
         Optional<RoomMembership> membership = roomMembershipRepository.findByUserIdAndRoomId(userId, roomId);
         if (membership.isPresent()) {

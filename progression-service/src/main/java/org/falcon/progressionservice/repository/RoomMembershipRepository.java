@@ -12,12 +12,12 @@ import java.util.Optional;
 @Repository
 public interface RoomMembershipRepository extends JpaRepository<RoomMembership, Long> {
     // find all room memberships for joined rooms
-    List<RoomMembership> findByUserIdAndIsJoinedTrue(Long userId);
+    List<RoomMembership> findByUserIdAndIsJoinedTrue(String userId);
     // find all room memberships for saved rooms
-    List<RoomMembership> findByUserIdAndIsSavedTrue(Long userId);
+    List<RoomMembership> findByUserIdAndIsSavedTrue(String userId);
     // find all room memberships affiliated with a user
-    List<RoomMembership> findByUserId(Long userId);
+    List<RoomMembership> findByUserId(String userId);
 
     @Lock(LockModeType.PESSIMISTIC_READ)
-    Optional<RoomMembership> findByUserIdAndRoomId(Long userId, Long roomId);
+    Optional<RoomMembership> findByUserIdAndRoomId(String userId, Long roomId);
 }
