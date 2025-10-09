@@ -4,6 +4,7 @@ spring:
   application:
     name: api-gateway
 
+# used by Spring Security to fetch the public key from the authorization server at startup.
   security:
     oauth2:
       resourceserver:

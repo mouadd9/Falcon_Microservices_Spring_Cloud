@@ -20,7 +20,6 @@ public class RoomMembership {
     private Long id;
     private Boolean isJoined;
     private Boolean isSaved;
-    private Date completedAt;
     private int challengesCompleted;
 
     @Column(name = "user_id")
